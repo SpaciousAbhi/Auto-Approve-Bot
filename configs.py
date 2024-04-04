@@ -6,7 +6,7 @@ class Config:
     BOT_TOKEN = getenv("BOT_TOKEN", "6756845327:AAGwyRCE2YlVZQihOhJzbWj2qz7J7rx4dU8")
     FSUB = getenv("FSUB", "your channel username")
     CHID = int(getenv("CHID", "your channel id"))
-    SUDO = list(map(int, getenv("SUDO").split()))
+    SUDO = list(map(int, getenv("1654334233").split()))
     MONGO_URI = getenv("mongodb+srv://tigamow711:s0cUEhrE1Jb5Iehs@vsfsb.pb89igt.mongodb.net/", "mongodb url")
     
 cfg = Config()
