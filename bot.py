@@ -17,29 +17,26 @@ gif = [
     'https://telegra.ph/file/2d326373f7aedada55fcc.mp4'
 ]
 
-
-#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Main process ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+# Main process
 @app.on_chat_join_request(filters.group | filters.channel & ~filters.private)
-async def approve(_, m : Message):
+async def approve(_, m: Message):
     op = m.chat
     kk = m.from_user
     try:
         add_group(m.chat.id)
         await app.approve_chat_join_request(op.id, kk.id)
         img = random.choice(gif)
-        await app.send_video(kk.id,img, "**Hello {},\nWelcome to {}. We are excited to have you here!\n\nKind regards,\n@VenomStoneNetwork**".format(m.from_user.mention, m.chat.title))
-    
+        welcome_message = f"Hello {m.from_user.mention}!\n\nI'm an auto-approve [Admin Join Requests](https://telegram.me/VenomStoneNetwork) Bot. I specialize in efficiently approving users in Groups/Channels. Simply add me to your Channel or Group and promote me as an Admin with the 'Add Members' permission.\n\nLooking forward to assisting you!\n\nBy: @VenomStoneNetwork"
+        await app.send_video(kk.id, img, welcome_message)
         add_user(kk.id)
     except errors.PeerIdInvalid as e:
-        print("user isn't start bot(means group)")
+        print("User isn't starting the bot (means group).")
     except Exception as err:
         print(str(err))    
- 
-#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Start ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+# Start command
 @app.on_message(filters.command("start"))
-async def op(_, m :Message):
+async def start_command(_, m: Message):
     try:
         await app.get_chat_member(cfg.CHID, m.from_user.id) 
         if m.chat.type == enums.ChatType.PRIVATE:
@@ -48,22 +45,17 @@ async def op(_, m :Message):
                     [
                         InlineKeyboardButton("🗯 Channel", url="https://telegram.me/VenomStoneNetwork"),
                         InlineKeyboardButton("💬 Support", url="https://telegram.me/VenomStoneNetwork")
-                    ],[
+                    ],
+                    [
                         InlineKeyboardButton("➕ Add me to your Chat ➕", url="https://telegram.me/VenomStoneAutoRequestAceeptBot?startgroup")
                     ]
                 ]
             )
             add_user(m.from_user.id)
-            await m.reply_photo("https://telegra.ph/file/63d723680cca52ba46319.jpg", caption="**Hello {}!
-
-I am an auto-approve [Admin Join Requests]({}) Bot. I specialize in efficiently approving users in Groups/Channels. Simply add me to your Channel or Group and promote me as an Admin with the "Add Members" permission.
-
-Looking forward to assisting you!
-
-By: @VenomStoneNetwork**".format(m.from_user.mention, "https://telegram.me/VenomStoneNetwork"), reply_markup=keyboard)
-    
-        elif m.chat.type == enums.ChatType.GROUP or enums.ChatType.SUPERGROUP:
-            keyboar = InlineKeyboardMarkup(
+            welcome_message = """**Hello {}!\n\nI am an auto-approve [Admin Join Requests](https://telegram.me/VenomStoneNetwork) Bot. I specialize in efficiently approving users in Groups/Channels. Simply add me to your Channel or Group and promote me as an Admin with the 'Add Members' permission.\n\nLooking forward to assisting you!\n\nBy: @VenomStoneNetwork**""".format(m.from_user.mention)
+            await m.reply_photo("https://telegra.ph/file/63d723680cca52ba46319.jpg", caption=welcome_message, reply_markup=keyboard)
+        elif m.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
+            keyboard = InlineKeyboardMarkup(
                 [
                     [
                         InlineKeyboardButton("💁‍♂️ Start me private 💁‍♂️", url="https://telegram.me/VenomStoneAutoRequestAceeptBot?start=start")
@@ -71,25 +63,25 @@ By: @VenomStoneNetwork**".format(m.from_user.mention, "https://telegram.me/Venom
                 ]
             )
             add_group(m.chat.id)
-            await m.reply_text("**{}\nwrite me private for more details**".format(m.from_user.first_name), reply_markup=keyboar)
-        print(m.from_user.first_name +" Is started Your Bot!")
+            await m.reply_text(f"**{m.from_user.first_name}**, write me private for more details.", reply_markup=keyboard)
+        print(f"{m.from_user.first_name} has started your bot!")
 
     except UserNotParticipant:
         key = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton("👉 Update Channel 👈", url="https://telegram.me/VenomStoneNetwork")
-                ],[
-                    InlinekeyboardButton("🍀 Check Again 🍀","chk")
+                ],
+                [
+                    InlineKeyboardButton("🍀 Check Again 🍀", callback_data="chk")
                 ]
             ]
         )
-        await m.reply_text("**⚠️Access Denied!⚠️\n\nPlease Join my Updates Channel to use me.If you joined click check again button to confirm.**".format(cfg.FSUB), reply_markup=key)
+        await m.reply_text(f"**⚠️ Access Denied! ⚠️\n\nPlease Join my Updates Channel to use me. If you joined, click the check again button to confirm.**", reply_markup=key)
 
-#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ callback ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+# Callback query
 @app.on_callback_query(filters.regex("chk"))
-async def chk(_, cb : CallbackQuery):
+async def check_callback(_, cb: CallbackQuery):
     try:
         await app.get_chat_member(cfg.CHID, cb.from_user.id)
         if cb.message.chat.type == enums.ChatType.PRIVATE:
@@ -98,22 +90,18 @@ async def chk(_, cb : CallbackQuery):
                     [
                         InlineKeyboardButton("🗯 Channel", url="https://telegram.me/VenomStoneNetwork"),
                         InlineKeyboardButton("💬 Support", url="https://telegram.me/VenomStoneNetwork")
-                    ],[
+                    ],
+                    [
                         InlineKeyboardButton("➕ Add me to your Chat ➕", url="https://telegram.me/VenomStoneAutoRequestAceeptBot?startgroup")
                     ]
                 ]
             )
             add_user(cb.from_user.id)
-            await cb.message.edit("**Hello {}!
-
-I am an auto-approve [Admin Join Requests]({}) Bot. I specialize in efficiently approving users in Groups/Channels. Simply add me to your Channel or Group and promote me as an Admin with the "Add Members" permission.
-
-Looking forward to assisting you!
-
-By: @VenomStoneNetwork**".format(cb.from_user.mention, "https://telegram.me/MovieVillaYT"), reply_markup=keyboard, disable_web_page_preview=True)
-        print(cb.from_user.first_name +" Is started Your Bot!")
+            welcome_message = """**Hello {}!\n\nI am an auto-approve [Admin Join Requests](https://telegram.me/MovieVillaYT) Bot. I specialize in efficiently approving users in Groups/Channels. Simply add me to your Channel or Group and promote me as an Admin with the 'Add Members' permission.\n\nLooking forward to assisting you!\n\nBy: @VenomStoneNetwork**""".format(cb.from_user.mention)
+            await cb.message.edit(welcome_message, reply_markup=keyboard, disable_web_page_preview=True)
+        print(f"{cb.from_user.first_name} has started your bot!")
     except UserNotParticipant:
-        await cb.answer("🙅‍♂️ You are not joined to channel join and try again. 🙅‍♂️")
+        await cb.answer("🙅‍♂️ You are not joined to the channel. Join and try again. 🙅‍♂️")
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ info ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
